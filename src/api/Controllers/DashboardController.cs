@@ -15,7 +15,7 @@ public class DashboardController(AppDbContext db) : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get()
     {
-        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         var myWorkItems = await db.WorkItems
             .Include(w => w.Project)
@@ -44,8 +44,16 @@ public class DashboardController(AppDbContext db) : ControllerBase
         {
             TotalAccounts = await db.Accounts.CountAsync(),
             TotalContacts = await db.Contacts.CountAsync(),
-            ActiveProjects = await db.Projects.CountAsync(p => p.Status == ProjectStatus.Active),
+            TotalActivities = await db.Activities.CountAsync(),
+            TotalQuotes = await db.Quotes.CountAsync(),
+            TotalInvoices = await db.Invoices.CountAsync(),
             OpenInvoices = await db.Invoices.CountAsync(i => i.Status == InvoiceStatus.Sent || i.Status == InvoiceStatus.Overdue),
+            TotalProducts = await db.Products.CountAsync(),
+            TotalProjects = await db.Projects.CountAsync(),
+            ActiveProjects = await db.Projects.CountAsync(p => p.Status == ProjectStatus.Active),
+            OpenWorkItems = await db.WorkItems.CountAsync(w => w.Status != WorkItemStatus.Done && w.Status != WorkItemStatus.Cancelled),
+            TotalTeams = await db.Teams.CountAsync(),
+            TotalUsers = await db.Users.CountAsync(),
         };
 
         return Ok(new { stats, myWorkItems, pendingTimesheets, myTimesheets });

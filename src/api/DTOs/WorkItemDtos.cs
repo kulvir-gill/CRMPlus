@@ -5,23 +5,30 @@ namespace CRMPlus.Api.DTOs;
 public record WorkItemRequest(
     string Title,
     string? Description,
-    int ProjectId,
-    int? AssignedUserId,
+    Guid ProjectId,
+    Guid? AssignedUserId,
+    Guid? AssignedTeamId,
     WorkItemStatus Status,
     WorkItemPriority Priority,
+    bool IsActive,
     DateTime? DueDate,
     decimal EstimatedHours);
 
+public record WorkItemListResponse(List<WorkItemResponse> Items, int TotalCount);
+
 public record WorkItemResponse(
-    int Id,
+    Guid Id,
     string Title,
     string? Description,
-    int ProjectId,
+    Guid ProjectId,
     string ProjectName,
-    int? AssignedUserId,
+    Guid? AssignedUserId,
     string? AssignedUserName,
+    Guid? AssignedTeamId,
+    string? AssignedTeamName,
     string Status,
     string Priority,
+    bool IsActive,
     DateTime? DueDate,
     decimal EstimatedHours,
     decimal ActualHours,

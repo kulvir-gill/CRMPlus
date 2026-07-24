@@ -1,17 +1,17 @@
 namespace CRMPlus.Api.Models;
 
-public enum UserRole { Employee, Manager, Admin }
-
 public class User
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string FirstName { get; set; } = "";
     public string LastName { get; set; } = "";
     public string Email { get; set; } = "";
+    public string? Title { get; set; }
     public string PasswordHash { get; set; } = "";
-    public UserRole Role { get; set; } = UserRole.Employee;
-    public int? TeamId { get; set; }
-    public Team? Team { get; set; }
+    public ICollection<SecurityRole> SecurityRoles { get; set; } = [];
+    public ICollection<Team> Teams { get; set; } = [];
+    public Guid? ManagerId { get; set; }
+    public User? Manager { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public ICollection<WorkItem> AssignedWorkItems { get; set; } = [];

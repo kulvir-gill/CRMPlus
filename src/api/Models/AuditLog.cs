@@ -1,16 +1,25 @@
 namespace CRMPlus.Api.Models;
 
-public enum AuditAction { Created, Updated, Deleted }
+public enum AuditAction { Created, Updated, Deleted, Associated, Deassociated }
 
 public class AuditLog
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string EntityName { get; set; } = "";
-    public int EntityId { get; set; }
+    public Guid EntityId { get; set; }
     public AuditAction Action { get; set; }
-    public int? UserId { get; set; }
+    public Guid? UserId { get; set; }
     public string? UserEmail { get; set; }
-    public string? OldValues { get; set; }
-    public string? NewValues { get; set; }
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public ICollection<AuditLogChange> Changes { get; set; } = [];
+}
+
+public class AuditLogChange
+{
+    public Guid Id { get; set; }
+    public Guid AuditLogId { get; set; }
+    public AuditLog AuditLog { get; set; } = null!;
+    public string FieldName { get; set; } = "";
+    public string? OldValue { get; set; }
+    public string? NewValue { get; set; }
 }

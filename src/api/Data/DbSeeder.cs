@@ -9,13 +9,15 @@ public static class DbSeeder
     {
         if (await db.Users.AnyAsync()) return;
 
+        var adminRole = await db.SecurityRoles.FirstAsync(r => r.Name == "Admin");
+
         var adminUser = new User
         {
             FirstName = "Admin",
             LastName = "User",
             Email = "admin@crmplus.com",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
-            Role = UserRole.Admin,
+            SecurityRoles = [adminRole],
             IsActive = true,
         };
         db.Users.Add(adminUser);

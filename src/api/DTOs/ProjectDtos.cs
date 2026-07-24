@@ -6,15 +6,25 @@ public record ProjectRequest(
     string Name,
     string? Description,
     ProjectStatus Status,
+    bool IsActive,
     DateTime? StartDate,
-    DateTime? EndDate);
+    DateTime? EndDate,
+    Guid? OwnerId = null,
+    Guid? OwnerTeamId = null);
+
+public record ProjectListResponse(List<ProjectResponse> Items, int TotalCount);
 
 public record ProjectResponse(
-    int Id,
+    Guid Id,
     string Name,
     string? Description,
     string Status,
+    bool IsActive,
     DateTime? StartDate,
     DateTime? EndDate,
     int WorkItemCount,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    Guid? OwnerId,
+    string? OwnerName,
+    Guid? OwnerTeamId,
+    string? OwnerTeamName);

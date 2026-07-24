@@ -2,28 +2,33 @@ using CRMPlus.Api.Models;
 
 namespace CRMPlus.Api.DTOs;
 
-public record InvoiceLineItemRequest(int? ProductId, string Description, decimal Quantity, decimal UnitPrice);
+public record InvoiceLineItemRequest(Guid? ProductId, string Description, decimal Quantity, decimal UnitPrice);
 
 public record InvoiceRequest(
-    int AccountId,
-    int? ContactId,
-    int? QuoteId,
+    Guid AccountId,
+    Guid? ContactId,
+    Guid? QuoteId,
     InvoiceStatus Status,
     DateTime? DueDate,
     string? Notes,
     decimal TaxRate,
-    List<InvoiceLineItemRequest> LineItems);
+    List<InvoiceLineItemRequest> LineItems,
+    Guid? OwnerId = null,
+    Guid? OwnerTeamId = null,
+    Guid? OrderId = null);
 
-public record InvoiceLineItemResponse(int Id, int? ProductId, string? ProductName, string Description, decimal Quantity, decimal UnitPrice, decimal Total);
+public record InvoiceLineItemResponse(Guid Id, Guid? ProductId, string? ProductNumber, string? ProductName, string Description, decimal Quantity, decimal UnitPrice, decimal Total);
 
 public record InvoiceResponse(
-    int Id,
+    Guid Id,
     string InvoiceNumber,
-    int AccountId,
+    Guid AccountId,
     string AccountName,
-    int? ContactId,
+    Guid? ContactId,
     string? ContactName,
-    int? QuoteId,
+    Guid? QuoteId,
+    Guid? OrderId,
+    string? OrderNumber,
     string Status,
     DateTime? DueDate,
     string? Notes,
@@ -32,4 +37,8 @@ public record InvoiceResponse(
     decimal Tax,
     decimal Total,
     DateTime CreatedAt,
-    List<InvoiceLineItemResponse> LineItems);
+    List<InvoiceLineItemResponse> LineItems,
+    Guid? OwnerId,
+    string? OwnerName,
+    Guid? OwnerTeamId,
+    string? OwnerTeamName);

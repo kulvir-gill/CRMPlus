@@ -4,14 +4,20 @@ public enum InvoiceStatus { Draft, Sent, Paid, Overdue, Cancelled }
 
 public class Invoice
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string InvoiceNumber { get; set; } = "";
-    public int AccountId { get; set; }
+    public Guid AccountId { get; set; }
     public Account? Account { get; set; }
-    public int? ContactId { get; set; }
+    public Guid? ContactId { get; set; }
     public Contact? Contact { get; set; }
-    public int? QuoteId { get; set; }
+    public Guid? QuoteId { get; set; }
     public Quote? Quote { get; set; }
+    public Guid? OrderId { get; set; }
+    public Order? Order { get; set; }
+    public Guid? OwnerId { get; set; }
+    public User? Owner { get; set; }
+    public Guid? OwnerTeamId { get; set; }
+    public Team? OwnerTeam { get; set; }
     public InvoiceStatus Status { get; set; } = InvoiceStatus.Draft;
     public DateTime? DueDate { get; set; }
     public string? Notes { get; set; }
@@ -26,10 +32,10 @@ public class Invoice
 
 public class InvoiceLineItem
 {
-    public int Id { get; set; }
-    public int InvoiceId { get; set; }
+    public Guid Id { get; set; }
+    public Guid InvoiceId { get; set; }
     public Invoice? Invoice { get; set; }
-    public int? ProductId { get; set; }
+    public Guid? ProductId { get; set; }
     public Product? Product { get; set; }
     public string Description { get; set; } = "";
     public decimal Quantity { get; set; } = 1;

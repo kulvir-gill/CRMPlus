@@ -1,13 +1,22 @@
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState } from 'react'
+import type { ReactNode } from 'react'
 import api from '../api/client'
 
 interface AuthUser {
-  userId: number
+  userId: string
   email: string
   firstName: string
   lastName: string
-  role: string
+  roles: string[]
+  modules: string[]
+  moduleAccess: string[]
   token: string
+}
+
+export function getAccessLevel(user: AuthUser | null, module: string): 'Full' | 'ReadOnly' | 'UserLevel' {
+  const entry = user?.moduleAccess?.find((m) => m.startsWith(`${module}:`))
+  const level = entry?.split(':')[1]
+  return level === 'ReadOnly' || level === 'UserLevel' ? level : 'Full'
 }
 
 interface AuthContextType {
@@ -21,7 +30,15 @@ const AuthContext = createContext<AuthContextType>(null!)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(() => {
     const saved = localStorage.getItem('user')
-    return saved ? JSON.parse(saved) : null
+    if (!saved) return null
+    const parsed = JSON.parse(saved)
+    if (!Array.isArray(parsed.roles) || !Array.isArray(parsed.modules) || !Array.isArray(parsed.moduleAccess)) {
+      // Stale session from before multi-role/module/access-level support (or otherwise malformed) - force a fresh login.
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      return null
+    }
+    return parsed
   })
 
   const login = async (email: string, password: string) => {

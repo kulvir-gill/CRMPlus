@@ -1,1 +1,122 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Black/neutral accent, replacing the default indigo scale.
+     Every existing indigo-* utility class across the app picks this up automatically. */
+  --color-indigo-50: #f7f7f7;
+  --color-indigo-100: #e8e8e8;
+  --color-indigo-200: #d1d1d1;
+  --color-indigo-300: #b0b0b0;
+  --color-indigo-400: #888888;
+  --color-indigo-500: #666666;
+  --color-indigo-600: #404040;
+  --color-indigo-700: #262626;
+  --color-indigo-800: #171717;
+  --color-indigo-900: #0d0d0d;
+  --color-indigo-950: #000000;
+
+  /* Brand blue (--brand #1a4d8f at 600, --brand-soft #eef3fb at 50),
+     replacing the default blue scale. Every existing blue-* utility class
+     across the app picks this up automatically. */
+  --color-blue-50: #eef3fb;
+  --color-blue-100: #dce7f6;
+  --color-blue-200: #b9d0ed;
+  --color-blue-300: #8fb3e0;
+  --color-blue-400: #5f8fcc;
+  --color-blue-500: #386bb0;
+  --color-blue-600: #1a4d8f;
+  --color-blue-700: #153e73;
+  --color-blue-800: #11305a;
+  --color-blue-900: #0d2544;
+  --color-blue-950: #08182e;
+
+  /* Neutral ink/line/bg scale, replacing the default cool gray scale. */
+  --color-gray-50: #f0f2f5;
+  --color-gray-100: #eef1f6;
+  --color-gray-200: #e4e8ef;
+  --color-gray-300: #d3d9e3;
+  --color-gray-400: #8b95a5;
+  --color-gray-500: #707c8f;
+  --color-gray-600: #4a5568;
+  --color-gray-700: #313c4d;
+  --color-gray-800: #1c2536;
+  --color-gray-900: #0f1729;
+  --color-gray-950: #080d18;
+
+  /* Accent green (--accent #0d9668 at 600, --accent-soft #e6f6ef at 50),
+     replacing the default emerald scale. */
+  --color-emerald-50: #e6f6ef;
+  --color-emerald-100: #ceeee0;
+  --color-emerald-200: #9adfc4;
+  --color-emerald-300: #62cca3;
+  --color-emerald-400: #2fb488;
+  --color-emerald-500: #129e73;
+  --color-emerald-600: #0d9668;
+  --color-emerald-700: #0a7857;
+  --color-emerald-800: #085f46;
+  --color-emerald-900: #064a37;
+  --color-emerald-950: #032b20;
+
+  /* Danger (--danger #c2410c at 600), replacing the default red scale. */
+  --color-red-50: #fdf2ee;
+  --color-red-100: #fbe1d5;
+  --color-red-200: #f5bfa4;
+  --color-red-300: #ed9871;
+  --color-red-400: #dd6c3f;
+  --color-red-500: #cd521f;
+  --color-red-600: #c2410c;
+  --color-red-700: #9c350c;
+  --color-red-800: #7a2b0d;
+  --color-red-900: #5f240d;
+  --color-red-950: #351105;
+
+  /* Amber (--amber #b45309 at 700, --amber-soft #fdf1e0 at 50),
+     replacing the default amber scale. */
+  --color-amber-50: #fdf1e0;
+  --color-amber-100: #fae1bc;
+  --color-amber-200: #f4c384;
+  --color-amber-300: #eba152;
+  --color-amber-400: #dd7f2f;
+  --color-amber-500: #c96419;
+  --color-amber-600: #c25f0d;
+  --color-amber-700: #b45309;
+  --color-amber-800: #8f420b;
+  --color-amber-900: #6f350c;
+  --color-amber-950: #3d1c06;
+
+  /* Read-only field/control background - deliberately lighter than the page
+     background (gray-50) so controls don't visually blend into the page. */
+  --color-control: #f8fafc;
+
+  /* Card radii and elevation, matching the app's design tokens
+     (--radius: 14px, --radius-sm: 9px, --shadow). */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.5625rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.125rem;
+  --shadow-card: 0 1px 2px rgba(16, 23, 41, .04), 0 4px 16px rgba(16, 23, 41, .05);
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+
+  body {
+    font-family: var(--font-sans);
+  }
+}
+
+@layer components {
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+}

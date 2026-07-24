@@ -6,18 +6,20 @@ public record ActivityRequest(
     ActivityType Type,
     string Subject,
     string? Body,
-    int? AccountId,
-    int? ContactId);
+    EmailDirection? Direction,
+    Guid? AccountId,
+    Guid? ContactId);
 
 public record ActivityResponse(
-    int Id,
+    Guid Id,
     string Type,
     string Subject,
     string? Body,
-    int? AccountId,
+    string? Direction,
+    Guid? AccountId,
     string? AccountName,
-    int? ContactId,
+    Guid? ContactId,
     string? ContactName,
-    int UserId,
+    Guid UserId,
     string UserName,
     DateTime CreatedAt);

@@ -1,97 +1,106 @@
-import { useEffect, useState } from 'react'
-import api from '../api/client'
-import { useAuth } from '../context/AuthContext'
-import PageHeader from '../components/PageHeader'
-import Modal from '../components/Modal'
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth, getAccessLevel } from '../context/AuthContext'
+import EntityListView from '../components/EntityListView'
+import type { EntityColumn } from '../components/EntityListView'
+import { useEntityListView } from '../hooks/useEntityListView'
+import { IconChevron } from '../components/RibbonButton'
 
-interface Timesheet { id: number; userName: string; weekStartDate: string; status: string; totalHours: number; notes?: string; rejectionReason?: string }
+interface Timesheet { id: string; userName: string; weekStartDate: string; status: string; isActive: boolean; totalHours: number; notes?: string; comments?: string }
 
 const statusColor: Record<string, string> = { Draft: 'bg-gray-100 text-gray-700', Submitted: 'bg-yellow-100 text-yellow-700', Approved: 'bg-green-100 text-green-700', Rejected: 'bg-red-100 text-red-700' }
 
+type TimesheetView = 'all' | 'pending' | 'approved' | 'teamPending'
+
+const timesheetViewLabels: Record<TimesheetView, string> = {
+  all: 'My All Timesheets',
+  pending: 'My Pending Timesheets',
+  approved: 'My Approved Timesheets',
+  teamPending: 'Team Pending Review',
+}
+
+const timesheetViewParams: Record<TimesheetView, Record<string, unknown>> = {
+  all: { myTimesheets: true, pendingApproval: false },
+  pending: { myTimesheets: true, pendingApproval: true },
+  approved: { myTimesheets: true, status: 'Approved' },
+  teamPending: { myTimesheets: false, pendingApproval: true },
+}
+
+const columns: EntityColumn<Timesheet>[] = [
+  { field: 'user', label: 'Employee', sortable: false, render: (t) => <span className="text-gray-900">{t.userName}</span> },
+  { field: 'weekstartdate', label: 'Week', render: (t) => <span className="text-gray-600">{new Date(t.weekStartDate).toLocaleDateString()}</span> },
+  { field: 'totalhours', label: 'Total Hours', render: (t) => <span className="text-gray-600">{t.totalHours}h</span> },
+  { field: 'status', label: 'Status', render: (t) => <span className={`text-sm px-2 py-0.5 rounded-full font-medium ${statusColor[t.status] ?? ''}`}>{t.status}</span> },
+  { field: 'notes', label: 'Notes / Comments', sortable: false, render: (t) => <span className="text-gray-500">{t.notes || t.comments || '—'}</span> },
+]
+
+const exportColumns = [
+  { key: 'userName' as const, label: 'Employee' },
+  { key: 'weekStartDate' as const, label: 'Week' },
+  { key: 'totalHours' as const, label: 'Total Hours' },
+  { key: 'status' as const, label: 'Status' },
+  { key: 'isActive' as const, label: 'Active' },
+]
+
 export default function Timesheets() {
+  const navigate = useNavigate()
   const { user } = useAuth()
-  const isManager = user?.role === 'Manager' || user?.role === 'Admin'
-  const [timesheets, setTimesheets] = useState<Timesheet[]>([])
-  const [showPending, setShowPending] = useState(false)
-  const [reviewId, setReviewId] = useState<number | null>(null)
-  const [reviewStatus, setReviewStatus] = useState('Approved')
-  const [rejectionReason, setRejectionReason] = useState('')
+  const isManager = user?.roles?.some((r) => r === 'Manager' || r === 'Admin') ?? false
+  const canCreate = getAccessLevel(user, 'resource') !== 'ReadOnly'
+  const [timesheetView, setTimesheetView] = useState<TimesheetView>('all')
+  const state = useEntityListView<Timesheet>({
+    endpoint: '/timesheets', defaultSortField: 'weekstartdate', defaultSortDir: 'desc',
+    extraParams: timesheetViewParams[timesheetView],
+  })
+  const [viewMenuOpen, setViewMenuOpen] = useState(false)
+  const viewMenuRef = useRef<HTMLDivElement>(null)
 
-  const load = () =>
-    api.get('/timesheets', { params: { myTimesheets: !showPending, pendingApproval: showPending } })
-      .then((r) => setTimesheets(r.data))
+  useEffect(() => {
+    if (!viewMenuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (viewMenuRef.current && !viewMenuRef.current.contains(e.target as Node)) setViewMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [viewMenuOpen])
 
-  useEffect(() => { load() }, [showPending])
+  const availableViews: TimesheetView[] = isManager ? ['all', 'pending', 'approved', 'teamPending'] : ['all', 'pending', 'approved']
 
-  const submit = async (id: number) => {
-    await api.post(`/timesheets/${id}/submit`)
-    load()
-  }
-
-  const review = async () => {
-    const statusMap: Record<string, number> = { Approved: 2, Rejected: 3 }
-    await api.post(`/timesheets/${reviewId}/review`, { status: statusMap[reviewStatus], rejectionReason })
-    setReviewId(null); load()
-  }
-
-  return (
-    <div>
-      <PageHeader title="Timesheets" />
-      <div className="p-6">
-        {isManager && (
-          <div className="flex gap-3 mb-4">
-            <button onClick={() => setShowPending(false)} className={`text-sm px-4 py-2 rounded-lg border ${!showPending ? 'bg-indigo-600 text-white border-indigo-600' : ''}`}>My Timesheets</button>
-            <button onClick={() => setShowPending(true)} className={`text-sm px-4 py-2 rounded-lg border ${showPending ? 'bg-indigo-600 text-white border-indigo-600' : ''}`}>Pending Approval</button>
-          </div>
-        )}
-        <div className="bg-white rounded-xl border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider">
-              <tr>{['Employee', 'Week', 'Total Hours', 'Status', 'Notes', ''].map((h) => <th key={h} className="px-4 py-3 text-left">{h}</th>)}</tr>
-            </thead>
-            <tbody className="divide-y">
-              {timesheets.map((t) => (
-                <tr key={t.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">{t.userName}</td>
-                  <td className="px-4 py-3">{new Date(t.weekStartDate).toLocaleDateString()}</td>
-                  <td className="px-4 py-3">{t.totalHours}h</td>
-                  <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor[t.status] ?? ''}`}>{t.status}</span></td>
-                  <td className="px-4 py-3 text-gray-500">{t.notes ?? t.rejectionReason ?? '—'}</td>
-                  <td className="px-4 py-3 text-right space-x-2">
-                    {t.status === 'Draft' && <button onClick={() => submit(t.id)} className="text-indigo-600 hover:underline">Submit</button>}
-                    {isManager && t.status === 'Submitted' && <button onClick={() => setReviewId(t.id)} className="text-indigo-600 hover:underline">Review</button>}
-                  </td>
-                </tr>
-              ))}
-              {timesheets.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">No timesheets</td></tr>}
-            </tbody>
-          </table>
+  const viewSelector = (
+    <div className="relative shrink-0" ref={viewMenuRef}>
+      <button
+        onClick={() => setViewMenuOpen((v) => !v)}
+        className="flex items-center gap-1.5 text-sm font-semibold text-gray-900 hover:text-gray-700"
+      >
+        {timesheetViewLabels[timesheetView]}
+        <IconChevron open={viewMenuOpen} />
+      </button>
+      {viewMenuOpen && (
+        <div className="absolute z-10 top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg w-56 py-1">
+          {availableViews.map((v) => (
+            <button
+              key={v}
+              onClick={() => { setTimesheetView(v); setViewMenuOpen(false) }}
+              className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${timesheetView === v ? 'text-indigo-700 font-medium' : 'text-gray-700'}`}
+            >
+              {timesheetViewLabels[v]}
+            </button>
+          ))}
         </div>
-      </div>
-
-      {reviewId && (
-        <Modal title="Review Timesheet" onClose={() => setReviewId(null)}>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Decision</label>
-              <select className="w-full border rounded-lg px-3 py-2 text-sm" value={reviewStatus} onChange={(e) => setReviewStatus(e.target.value)}>
-                <option>Approved</option>
-                <option>Rejected</option>
-              </select>
-            </div>
-            {reviewStatus === 'Rejected' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Rejection Reason</label>
-                <textarea rows={3} className="w-full border rounded-lg px-3 py-2 text-sm" value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} />
-              </div>
-            )}
-            <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => setReviewId(null)} className="px-4 py-2 text-sm border rounded-lg">Cancel</button>
-              <button onClick={review} className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Submit Review</button>
-            </div>
-          </div>
-        </Modal>
       )}
     </div>
+  )
+
+  return (
+    <EntityListView
+      entityLabel="Timesheet"
+      entityLabelPlural="Timesheets"
+      state={state}
+      columns={columns}
+      exportColumns={exportColumns}
+      onNew={canCreate ? () => navigate('/resource/timesheets/new') : undefined}
+      onRowClick={(t) => navigate(`/resource/timesheets/${t.id}`)}
+      viewSelectorOverride={viewSelector}
+    />
   )
 }

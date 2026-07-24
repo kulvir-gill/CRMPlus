@@ -4,20 +4,42 @@ public record AccountRequest(
     string Name,
     string? Phone,
     string? Email,
-    string? Website,
-    string? Address,
     string? Industry,
-    bool AuditEnabled = false);
+    decimal TaxRate = 0,
+    bool AuditEnabled = false,
+    bool IsActive = true,
+    Guid? PrimaryContactId = null,
+    Guid? OwnerId = null,
+    Guid? OwnerTeamId = null,
+    AddressDto? PrimaryAddress = null,
+    List<AccountAddressRequest>? Addresses = null);
+
+public record AccountListResponse(
+    List<AccountResponse> Items,
+    int TotalCount);
+
+public record AccountBulkStatusRequest(
+    List<Guid> Ids,
+    bool IsActive);
 
 public record AccountResponse(
-    int Id,
+    Guid Id,
+    string AccountNumber,
     string Name,
     string? Phone,
     string? Email,
-    string? Website,
-    string? Address,
     string? Industry,
+    decimal TaxRate,
     bool AuditEnabled,
+    bool IsActive,
     DateTime CreatedAt,
     int ContactCount,
-    int ActivityCount);
+    int ActivityCount,
+    Guid? PrimaryContactId,
+    string? PrimaryContactName,
+    Guid? OwnerId,
+    string? OwnerName,
+    Guid? OwnerTeamId,
+    string? OwnerTeamName,
+    AddressDto? PrimaryAddress,
+    List<AccountAddressDto> Addresses);
